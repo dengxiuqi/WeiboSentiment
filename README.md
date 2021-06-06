@@ -1,61 +1,32 @@
 # WeiboSentiment
-基于各种机器学习和深度学习的中文微博情感分析    
-语料来源： https://github.com/dengxiuqi/weibo2018   
-##### "情感分析"是我本科的毕业设计, 也是我入门并爱上NLP的项目hhh, 把它发出来供大家交流    
-
-* 用FastText在语料库上训练并生成词向量, 该任务语料库较小, 用fastText可以增加n-gram特征, 比传统word2vec要好    
-* 训练集10000条语料, 测试集500条语料     
-* 分别用SVM, Bayes, DNN, LSTM, Attention+BiLSTM, XGBoost等多种模型搭建并训练`正负情感二分类器`
-    * `SVM`其实不太适合做NLP, 只是当年我还很菜所以选了SVM(尬笑), 出于情怀就贴上来了
-    * `Bayes`速度快, 效果好。可能是因为该任务语料规模较小,在大规模语料任务上性能会下降,而且磁带模型丢失了语序信息,可拓展性不强(2020.2.13更新)
-    * `DNN`效果不好, 不过现在也很少有直接用DNN做NLP的, 所以这里仅作为从机器学习到深度学习的过渡模型了
-    * `LSTM`用到了上游训练的FastText词向量, 并且考虑了语序信息, 效果有明显提升
-    * `Attention+BiLSTM`效果很好, 但相比纯LSTM提升没那么明显，主要是因为该任务相对简单且语料少。迁移至更复杂任务后注意力的强大会越来越明显
-    * `XGBoost`真是机器学习界的一大杀器, 在这种简单的NLP任务上真是又快又好(2020.6.4更新)
-* 对不同话题下的100条微博进行简单的舆情分析(正负情感微博比例)
-
+用各种机器学习对中文微博进行情感分析    
+语料来源： https://github.com/dengxiuqi/weibo2018
+---
+##### "微博情感分析"是我本科的毕业设计, 也是我入门NLP的项目, 就把它发出来供大家交流。
+##### 2021.06.07更新: 之前的版本写得比较随意, 没想到star破百了, 私下也有一些刚入门NLP的同学因为这个项目联系我, 就更新一下这个项目吧
+* 重构项目架构和代码, 提高可读性
+* 每个文件中的特征、数据处理方法与模型细节都尽可能避免重复, 以给各位同学提供更多的参考
+* 神经网络结构换成了pytorch, 需要`tensorflow 1.0`代码的同学请回退至`445998`版本。    
+* 新增了`Bert`模型
+* 由于gensim新老版本很多语法不兼容, 将gensim更新为4.0版本
+----
+#### 项目说明
+* 训练集10000条语料, 测试集500条语料
+* 使用朴素贝叶斯、SVM、XGBoost、LSTM和Bert, 等多种模型搭建并训练二分类模型
+* 前3个模型都采用端到端的训练方法
+* LSTM先预训练得到Word2Vec词向量, 在训练神经网络
+* `Bert`使用的是哈工大的预训练模型, 用Bert的`[CLS]`位输出在一个下游网络上进行finetune。预训练模型需要自行下载:    
+    * github下载地址: https://github.com/ymcui/Chinese-BERT-wwm
+    * baidu网盘: https://pan.baidu.com/s/16z-ybrqT6wLdy_mLHtywSw  密码: djkj
+    * 下载后将文件夹放在`./model`文件夹下, 并将`bert_config.json`改名为`config.json`
+---
 #### 实验结果
 各种分类器在测试集上的测试结果  
 
-|模型|准确率|
-| :---: | :---: |
-|XGBoost|0.874|
-|Attention+BiLSTM|0.86|
-|Naive Bayes|0.856|
-|LSTM|0.854|
-|SVM|0.82|
-|DNN|0.81|
-
-#### 舆情分析
-数据来自于2018年6月的微博
-
-|主题|正面:负面|
-| :---: | :---: |
-|特朗普|55:44|
-|周杰伦|88:12|
-|好莱坞|79:21|
-|人工智能|79:21|
-|毕业|78:22|
-
-#### 工程结构
-
-    WeiboSentiment   
-    ├── 00.FastText.ipynb `生成FastText词向量`  
-    ├── 01.SVM.ipynb `SVM分类器`  
-    ├── 02.Bayes.ipynb `朴素贝叶斯`  
-    ├── 03.DNN.ipynb `神经网络分类器`  
-    ├── 04.LSTM.ipynb `LSTM分类器`  
-    ├── 05.Attention+BiLSTM.ipynb `Attention+BiLSTM分类器`  
-    ├── 06.XGBoost.ipynb `XGBoost分类器`   
-    ├── SentimentAnlysis.ipynb `验证集分析`  
-    ├── stopwords.txt `停用词典`      
-    ├── utils.py　 `工具函数` 　
-    ├── model `各种模型`   
-    │　　├── model_100.txt `维度为100的FastText词向量`   
-    │　　├── attention `Attention+LSTM模型`   
-    │　　├── lstm `LSTM模型`    
-    │　　└── nn `神经网络模型`   
-    └── weibo2018 `微博语料数据`   
-     　　├── topics `未标注情感的不同主题微博语料`   
-     　　├── train.txt `训练集`   
-     　　└── test.txt `测试集`  
+|模型|准确率|AUC|
+| :---: | :---: | :---: |
+|1.bayes|0.856| - |
+|2.svm|0.856| - |
+|3.xgboost|0.86| 0.904 |
+|4.lstm|0.87| 0.931 |
+|5.bert|0.87| 0.929 |

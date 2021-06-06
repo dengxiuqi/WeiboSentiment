@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Bert Model
+model/chinese_wwm_pytorch
+
 # Mac
 .DS_Store
 */.DS_Store
