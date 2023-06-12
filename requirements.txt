@@ -2,5 +2,5 @@ jieba==0.42.1
 pytorch==1.7.1
 sklearn==0.23.2
 xgboost==1.2.1
-transformers==4.6.1
+transformers==4.30.0
 gensim==4.0.1
